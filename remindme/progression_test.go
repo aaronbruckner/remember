@@ -17,6 +17,16 @@ func newDefaultProgression() *progression {
 	return newProgression(newStateFilePath())
 }
 
+func Test_newProgressionWithWorkingDirectory(t *testing.T) {
+	// Given
+	assert := assert.New(t)
+	progression := newProgressionWithWorkingDirectory()
+
+	wd, err := os.Getwd()
+	assert.Nil(err)
+	assert.Equal(path.Join(wd, "remindme_progress.json"), progression.stateFilePath)
+}
+
 func Test_nextIndexForTopic_returnsIncrementalIndex(t *testing.T) {
 	// Given
 	progression := newDefaultProgression()
@@ -47,8 +57,8 @@ func Test_nextIndexForTopic_returnsNilIfLimitReached(t *testing.T) {
 	index2, err2 := progression.nextIndexForTopic("example", 2)
 
 	// Then
-	assert.ErrorIs(err1, ErrExhaustedIndex)
-	assert.ErrorIs(err2, ErrExhaustedIndex)
+	assert.ErrorIs(err1, errExhaustedIndex)
+	assert.ErrorIs(err2, errExhaustedIndex)
 	assert.Equal(-1, index1)
 	assert.Equal(-1, index2)
 }
@@ -67,7 +77,7 @@ func Test_nextIndexForTopic_keepsTrackOfReturnedIndexBetweenInstances(t *testing
 	// Then
 	assert.Nil(err1)
 	assert.Nil(err2)
-	assert.ErrorIs(err3, ErrExhaustedIndex)
+	assert.ErrorIs(err3, errExhaustedIndex)
 
 	assert.Equal(0, index1)
 	assert.Equal(1, index2)

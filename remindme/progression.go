@@ -5,7 +5,16 @@ import (
 	"errors"
 	"log"
 	"os"
+	"path"
 )
+
+func newProgressionWithWorkingDirectory() *progression {
+	wd, err := os.Getwd()
+	if err != nil {
+		log.Fatal("Unrecoverable error fetching working directory")
+	}
+	return newProgression(path.Join(wd, "remindme_progress.json"))
+}
 
 func newProgression(stateFilePath string) *progression {
 	return &progression{stateFilePath: stateFilePath}
@@ -15,7 +24,7 @@ type progression struct {
 	stateFilePath string
 }
 
-var ErrExhaustedIndex = errors.New("ExhaustedIndexError")
+var errExhaustedIndex = errors.New("ExhaustedIndexError")
 
 type progFileState struct {
 	TopicToIndexMap map[string]int
@@ -32,7 +41,7 @@ func (p *progression) nextIndexForTopic(topic string, limit int) (int, error) {
 
 	index := state.TopicToIndexMap["example"]
 	if index >= limit {
-		return -1, ErrExhaustedIndex
+		return -1, errExhaustedIndex
 	}
 	state.TopicToIndexMap["example"] = index + 1
 	saveStateFile(p.stateFilePath, state)
